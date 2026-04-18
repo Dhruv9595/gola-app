@@ -10,8 +10,8 @@ app.use(express.static("public"));
 const ADMIN_PASSWORD = "1234";
 
 // 🤖 Telegram (replace later)
-const TOKEN = "8603930037:AAFZGoqTwc4XveACc5CihpaVR3o7L9NLTWo";
-const CHAT_ID = "1179811335";
+const TOKEN = process.env.TOKEN;
+const CHAT_ID = process.env.CHAT_ID;
 
 // 📋 get menu
 function getMenu() {
