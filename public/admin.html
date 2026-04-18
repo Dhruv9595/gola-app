@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<h2>🔒 Admin Panel</h2>
+
+<input type="password" id="password" placeholder="Password"><br><br>
+
+<div id="menu"></div>
+
+<h3>Add Item</h3>
+<input id="name" placeholder="Flavor">
+<input id="price" type="number" placeholder="Price">
+<button onclick="addItem()">Add</button>
+
+<br><br>
+<button onclick="saveMenu()">Save Menu</button>
+
+<script>
+let menu = [];
+
+async function loadMenu() {
+  const res = await fetch("/menu");
+  menu = await res.json();
+  render();
+}
+
+function render() {
+  const div = document.getElementById("menu");
+  div.innerHTML = "";
+
+  menu.forEach((item, index) => {
+    div.innerHTML += `
+      <p>
+        ${item.name} - ₹${item.price}
+        <button onclick="deleteItem(${index})">❌</button>
+      </p>
+    `;
+  });
+}
+
+function addItem() {
+  const name = document.getElementById("name").value;
+  const price = document.getElementById("price").value;
+
+  menu.push({ name, price: Number(price) });
+  render();
+}
+
+function deleteItem(index) {
+  menu.splice(index, 1);
+  render();
+}
+
+async function saveMenu() {
+  const password = document.getElementById("password").value;
+
+  const res = await fetch("/update-menu", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ password, menu })
+  });
+
+  if (res.status === 200) {
+    alert("Menu Updated!");
+  } else {
+    alert("Wrong Password!");
+  }
+}
+
+loadMenu();
+</script>
+
+</body>
+</html>
