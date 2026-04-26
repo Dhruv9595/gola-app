@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const axios = require("axios");
 const fs = require("fs");
@@ -6,60 +8,128 @@ const app = express();
 app.use(express.json());
 app.use(express.static("public"));
 
-// 🔐 password for admin
+// 🔐 Admin password
 const ADMIN_PASSWORD = "1234";
 
-// 🤖 Telegram (replace later)
+// 🤖 Telegram
 const TOKEN = process.env.TOKEN;
 const CHAT_ID = process.env.CHAT_ID;
 
-// 📋 get menu
+// ==============================
+// 📋 MENU FUNCTIONS
+// ==============================
 function getMenu() {
   return JSON.parse(fs.readFileSync("menu.json")).items;
 }
 
-// 💾 save menu
 function saveMenu(menu) {
   fs.writeFileSync("menu.json", JSON.stringify({ items: menu }, null, 2));
 }
 
-// 📩 send message
-async function sendMessage(text) {
-  await axios.post(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
-    chat_id: CHAT_ID,
-    text
-  });
+// ==============================
+// 📦 ORDER FUNCTIONS
+// ==============================
+function getOrders() {
+  try {
+    return JSON.parse(fs.readFileSync("orders.json"));
+  } catch {
+    return [];
+  }
 }
 
-// 📋 API: get menu
+function saveOrders(data) {
+  fs.writeFileSync("orders.json", JSON.stringify(data, null, 2));
+}
+
+// ==============================
+// 📩 TELEGRAM FUNCTION
+// ==============================
+async function sendMessage(text) {
+  try {
+    await axios.post(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+      chat_id: CHAT_ID,
+      text,
+    });
+    console.log("📩 Telegram sent");
+  } catch (err) {
+    console.log("❌ Telegram error:", err.response?.data || err.message);
+  }
+}
+
+// ==============================
+// 📋 API: GET MENU
+// ==============================
 app.get("/menu", (req, res) => {
   res.json(getMenu());
 });
 
-// 🛒 API: order
+// ==============================
+// 🛒 API: ORDER (FAST VERSION)
+// ==============================
 app.post("/order", async (req, res) => {
-  const { name, flavor, quantity } = req.body;
+  try {
+    const { name, orders } = req.body;
 
-  const menu = getMenu();
-  const item = menu.find(i => i.name === flavor);
+    if (!name || !orders || orders.length === 0) {
+      return res.send("Invalid order");
+    }
 
-  if (!item) return res.send("Invalid flavor");
+    const menu = getMenu();
+    let total = 0;
+    let itemsText = "";
 
-  const total = item.price * quantity;
+    for (let o of orders) {
+      const item = menu.find(i => i.name === o.flavor);
+      if (!item) continue;
 
-  const msg = `📦 New Order
+      const itemTotal = item.price * o.quantity;
+      total += itemTotal;
+
+      itemsText += `🍧 ${o.flavor} x ${o.quantity} = ₹${itemTotal}\n`;
+    }
+
+    const allOrders = getOrders();
+    const orderId = allOrders.length + 1;
+    const time = new Date().toLocaleString();
+
+    const message = `
+📦 Order #${orderId}
 
 👤 ${name}
-🍧 ${flavor}
-🔢 Qty: ${quantity}
-💰 ₹${total}`;
 
-  await sendMessage(msg);
+${itemsText}
+💰 Total: ₹${total}
 
-  res.send("Order sent!");
+🕒 ${time}
+`;
+
+    // 💾 Save order FIRST
+    const newOrder = {
+      id: orderId,
+      name,
+      orders,
+      total,
+      time,
+    };
+
+    allOrders.push(newOrder);
+    saveOrders(allOrders);
+
+    // ✅ SEND RESPONSE IMMEDIATELY (NO LAG)
+    res.send("✅ Order placed successfully!");
+
+    // 📩 SEND TELEGRAM IN BACKGROUND
+    sendMessage(message);
+
+  } catch (error) {
+    console.log("❌ Order error:", error.message);
+    res.send("❌ Something went wrong");
+  }
 });
 
-// 🔒 API: update menu
+// ==============================
+// 🔒 UPDATE MENU
+// ==============================
 app.post("/update-menu", (req, res) => {
   const { password, menu } = req.body;
 
@@ -71,4 +141,9 @@ app.post("/update-menu", (req, res) => {
   res.send("Menu updated");
 });
 
-app.listen(5000, () => console.log("Server running on 5000"));
+// ==============================
+// 🚀 START SERVER
+// ==============================
+app.listen(5000, () => {
+  console.log("🚀 Server running on 5000");
+});

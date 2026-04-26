@@ -1,54 +1,287 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ice Gola Station 🍧</title>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: linear-gradient(to right, #4facfe, #00f2fe);
+    }
+
+    h1 {
+      text-align: center;
+      padding: 15px;
+      background: #3a7bd5;
+      color: white;
+      margin: 0;
+      border-radius: 0 0 15px 15px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    .menu-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      padding: 15px;
+    }
+
+    .card {
+      background: white;
+      padding: 15px;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .price {
+      color: #3a7bd5;
+      font-weight: bold;
+    }
+
+    .desc {
+      font-size: 13px;
+      color: #555;
+    }
+
+    .order-box {
+      position: sticky;
+      bottom: 0;
+      background: white;
+      padding: 15px;
+      border-top: 3px solid #3a7bd5;
+    }
+
+    .item-row {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 5px;
+    }
+
+    input, select {
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      background: #3a7bd5;
+      color: white;
+      cursor: pointer;
+    }
+
+    .remove-btn {
+      background: red;
+    }
+
+    .total-box {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    /* 🧾 BILL SCREEN */
+    .bill-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .bill-box {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    .bill-item {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .bill-total {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+  </style>
 </head>
+
 <body>
 
-<h2>🍧 Ice Gola Order</h2>
+<h1>🍧 Ice Gola Station</h1>
 
-<form id="form">
-<input id="name" placeholder="Your Name" required><br><br>
+<h2>Menu</h2>
+<div class="menu-container" id="menu"></div>
 
-<select id="flavor"></select><br><br>
+<div class="order-box">
+  <input id="name" placeholder="Enter your name"><br>
 
-<input id="qty" type="number" value="1"><br><br>
+  <div id="items"></div>
 
-<button>Order</button>
-</form>
+  <button onclick="addItem()">➕ Add Item</button><br><br>
+
+  <div class="total-box">Total: ₹<span id="total">0</span></div>
+
+  <button onclick="showBill()">Submit Order</button>
+</div>
+
+<!-- 🧾 BILL SCREEN -->
+<div class="bill-overlay" id="billOverlay">
+  <div class="bill-box">
+    <h3>🧾 Order Summary</h3>
+    <p id="billName"></p>
+    <div id="billItems"></div>
+    <div class="bill-total" id="billTotal"></div>
+
+    <br>
+    <button onclick="confirmOrder()">✔ Confirm</button>
+    <button onclick="closeBill()" style="background:red;">❌ Cancel</button>
+  </div>
+</div>
 
 <script>
-async function loadMenu() {
-  const res = await fetch("/menu");
-  const data = await res.json();
+let menuData = [];
+let finalOrders = [];
 
-  const select = document.getElementById("flavor");
+fetch("/menu")
+.then(res => res.json())
+.then(data => {
+  menuData = data;
 
   data.forEach(item => {
-    const opt = document.createElement("option");
-    opt.value = item.name;
-    opt.text = `${item.name} - ₹${item.price}`;
-    select.appendChild(opt);
+    const div = document.createElement("div");
+    div.className = "card";
+
+    div.innerHTML = `
+      <h3>${item.name}</h3>
+      <p class="price">₹${item.price}</p>
+      <p class="desc">${item.description}</p>
+    `;
+
+    document.getElementById("menu").appendChild(div);
   });
+
+  addItem();
+});
+
+function addItem() {
+  const div = document.createElement("div");
+  div.className = "item-row";
+
+  div.innerHTML = `
+    <select onchange="calculateTotal()">
+      <option value="">Select Item</option>
+      ${menuData.map(i => `<option value="${i.name}">${i.name}</option>`).join("")}
+    </select>
+
+    <input type="number" value="1" min="1" onchange="calculateTotal()">
+
+    <button class="remove-btn" onclick="removeItem(this)">❌</button>
+  `;
+
+  document.getElementById("items").appendChild(div);
 }
 
-document.getElementById("form").onsubmit = async (e) => {
-  e.preventDefault();
+function removeItem(btn) {
+  btn.parentElement.remove();
+  calculateTotal();
+}
 
-  await fetch("/order", {
+function calculateTotal() {
+  let total = 0;
+
+  for (let div of document.getElementById("items").children) {
+    const flavor = div.querySelector("select").value;
+    const qty = div.querySelector("input").value;
+
+    if (!flavor) continue;
+
+    const item = menuData.find(i => i.name === flavor);
+    total += item.price * qty;
+  }
+
+  document.getElementById("total").innerText = total;
+}
+
+// 🧾 Show bill screen
+function showBill() {
+  const name = document.getElementById("name").value;
+
+  if (!name) return alert("Enter name");
+
+  finalOrders = [];
+  let total = 0;
+  let itemsHTML = "";
+
+  for (let div of document.getElementById("items").children) {
+    const flavor = div.querySelector("select").value;
+    const qty = Number(div.querySelector("input").value);
+
+    if (flavor && qty > 0) {
+      const item = menuData.find(i => i.name === flavor);
+      const itemTotal = item.price * qty;
+
+      total += itemTotal;
+
+      itemsHTML += `
+        <div class="bill-item">
+          <span>${flavor} x ${qty}</span>
+          <span>₹${itemTotal}</span>
+        </div>
+      `;
+
+      finalOrders.push({ flavor, quantity: qty });
+    }
+  }
+
+  if (finalOrders.length === 0) return alert("Add items");
+
+  document.getElementById("billName").innerText = "👤 " + name;
+  document.getElementById("billItems").innerHTML = itemsHTML;
+  document.getElementById("billTotal").innerText = "Total: ₹" + total;
+
+  document.getElementById("billOverlay").style.display = "flex";
+}
+
+function closeBill() {
+  document.getElementById("billOverlay").style.display = "none";
+}
+
+// ✔ Confirm order
+async function confirmOrder() {
+  const name = document.getElementById("name").value;
+
+  const res = await fetch("/order", {
     method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      name: document.getElementById("name").value,
-      flavor: document.getElementById("flavor").value,
-      quantity: document.getElementById("qty").value
-    })
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ name, orders: finalOrders })
   });
 
-  alert("Order Sent!");
-};
+  const text = await res.text();
+  alert(text);
 
-loadMenu();
+  closeBill();
+
+  document.getElementById("items").innerHTML = "";
+  document.getElementById("total").innerText = 0;
+  addItem();
+}
 </script>
 
 </body>

@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "name": "Dhruv Patel",
+    "orders": [
+      {
+        "flavor": "Maharaja",
+        "quantity": 1
+      },
+      {
+        "flavor": "Ice Fruit Dish",
+        "quantity": 1
+      },
+      {
+        "flavor": "Regular Ice Dish",
+        "quantity": 1
+      }
+    ],
+    "total": 410,
+    "time": "4/26/2026, 1:42:16 AM"
+  },
+  {
+    "id": 2,
+    "name": "Akshi",
+    "orders": [
+      {
+        "flavor": "Special Dryfruit Hungama",
+        "quantity": 1
+      },
+      {
+        "flavor": "Cream Mawa Malai",
+        "quantity": 1
+      }
+    ],
+    "total": 280,
+    "time": "4/26/2026, 1:43:04 AM"
+  }
+]

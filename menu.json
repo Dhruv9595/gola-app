@@ -1,6 +1,49 @@
 {
   "items": [
-    { "name": "Rose", "price": 20 },
-    { "name": "Kala Khatta", "price": 25 }
+    {
+      "name": "Regular Ice Dish",
+      "price": 50,
+      "description": "Any 3 colors, Tutti Futti, Kopru, Sprinkle" 
+    },
+    {
+      "name": "Cream Mawa Malai",
+      "price": 80,
+      "description": "4 colors, Cream, Mawa, Chocochips, Copra"
+    },
+    {
+      "name": "Ice Fruit Dish",
+      "price": 110,
+      "description": "6 colors, Kachikeri, Orange, Rose, Pineapple, Blueberry, Mango, Apple, Chiku, Grape, Orange, Watermelon, Tatty, Tutti Futti, Cream, Jelly, Kopru, Kaju, Badaam" 
+    },
+    {
+      "name": "Special Choco Dip",
+      "price": 120,
+      "description": "Chocolate Color, Chocolate Syrup, Chocolate Daana, Chocolate Sprinkle, Chocolate Balls, Choco Sticks" 
+    },
+    {
+      "name": "Rajwaadi Ki Shaan",
+      "price": 120,
+      "description": "Malai, Mawa, Tutti Frutti, Kaju, Badaam, Grape, Harshey Syrup, Stick, Daana, Sprinkle, Kopru" 
+    },
+    {
+      "name": "Ice Gola Station Special",
+      "price": 180,
+      "description": "Malai, Mawa, Tutti Futti, Kaju, Badaam, Grapes, Kopru, Chocolate daana, Gems, Jelly, Sprinkle, Cherry" 
+    },
+    {
+      "name": "Special Dryfruit Hungama",
+      "price": 200,
+      "description": "Ice cream, Malai, Brown Mawa, Tutti Futti, Kaju, Badaam, Grapes, Kopru, Chocolate Daana, Gems, Jelly, Sprinkle, Cherry" 
+    },
+    {
+      "name": "Maharaja",
+      "price": 250,
+      "description": "2 Ice cream, Malai, Brown Mawa, Tutti Frutti, Kopru, Kaju, Badaam, Grapes, Pista, Chocolate Daana, Sprinkle, Gems, Jelly, Cherry" 
+    },
+    {
+      "name": "Burj Khalifa",
+      "price": 300,
+      "description": "Ice Cream, Malai, Brown Mawa, Tutti Frutti, Kaju, Badaam, Grapes, Pista, Kopru, Chocolate Daana, Sprinkle, Gems, Jelly, Cherry" 
+    }
   ]
 }
